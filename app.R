@@ -7,7 +7,8 @@ library(forecast)  ##  smoothing calculate
 library(mgcv)      ## same above
 library(smooth)    ## same above
 library(ggplot2)   ##  shiny dependency
-
+library(jsonlite)
+library(httr)
 
 ui <- fluidPage(
 
@@ -19,13 +20,18 @@ ui <- fluidPage(
 
 server <- function(input, output) ({
   
-  eth <-read.csv("https://etherscan.io/chart/etherprice?output=csv", sep=",", header = TRUE, encoding = 'UTF-8')
+  base <- "https://min-api.cryptocompare.com/data/histoday?fsym=ETH&tsym=USD&limit=2000"
+  api_key <- "3b1c6f6932065d85a80ba8cab9a39f20d8f714ecc5d76fa361874c404bf1b9be"
+  
+  a <- GET(base, encode = c('json'))
+  address_content <- content(a, as = "text", encoding = "UTF-8", sep=",")
+  json_content <- address_content %>%  fromJSON
   
 
-
+  json_content$Data$time <- anydate(json_content$Data$time)
+  da <- json_content$Data$time[583:which.max(json_content$Data$time)]
+  Price <- as.numeric(json_content$Data$close)[583:which.max(json_content$Data$time)]
   
-  da <- as.Date(eth$Date.UTC., format = "%m/%d/%Y")
-  Price <- as.numeric(eth$Value)
   daily.ETH <- as.xts(Price, order.by = da)
   return <- diff(log(daily.ETH))
   
@@ -156,6 +162,6 @@ server <- function(input, output) ({
 shinyApp(ui = ui, server = server)
 
 # # deploy to shiny.io
-# rsconnect::setAccountInfo(name='kai-peng', token='2F57C4902543ECF0142207139371EF41', secret='')
-# library(rsconnect)
-# rsconnect::deployApp('C:/Users/nicoo/OneDrive/eng/ether-return')
+rsconnect::setAccountInfo(name='kai-peng', token='C0F2DE0B44AA58F79BCE8AB77BA9C658', secret='')
+library(rsconnect)
+rsconnect::deployApp('C:/Users/nicoo/OneDrive/eng/ether-return')
