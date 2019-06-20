@@ -1,6 +1,6 @@
 
-library(shiny)   ## duh ?
-library(plotly)  ## duh ?
+library(shiny)   
+library(plotly)  
 library(xts)  ##  formed ts
 library(zoo)  ##  same above
 library(forecast)  ##  smoothing calculate
